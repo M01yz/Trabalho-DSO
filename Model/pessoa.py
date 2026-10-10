@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 class Pessoa(ABC):
-    def __init__(self, nome, cpf, celular):
+    def __init__(self, nome: str, cpf: str, celular: str):
         self.__nome = nome
         self.__cpf = cpf
         self.__celular = celular
