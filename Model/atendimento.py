@@ -1,4 +1,4 @@
-from horario_funcionamento import HorarioFuncionamento
+from .horario_funcionamento import HorarioFuncionamento
 from datetime import date, time
 
 

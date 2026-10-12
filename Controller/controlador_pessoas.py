@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from Model.paciente import Paciente
     from Model.profissional import Profissional
-    from Model.responsavel import Responsavel
+    from Model.responsavel import ResponsavelLegal
 
 
 class ControladorPessoas:
@@ -13,7 +13,7 @@ class ControladorPessoas:
     def incluir_profissional(self, dados: dict) -> Profissional:
         pass
 
-    def incluir_responsavel(self, dados: dict) -> Responsavel:
+    def incluir_responsavel(self, dados: dict) -> ResponsavelLegal:
         pass
 
     def alterar(self, cpf: str, dados: dict) -> None:

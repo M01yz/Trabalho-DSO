@@ -1,11 +1,10 @@
-from servico_registro import ServicoRegistro
-from pagamento import Pagamento
+from .pagamento import Pagamento
 
-class ServicoPagamentos(ServicoRegistro):
-    def registrar(self, dados: dict) -> object:
+class ServicoPagamentos:
+    def registrar(self, pagamento: Pagamento) -> Pagamento:
         pass
 
-    def alterar(self, id: int, dados: dict) -> None:
+    def alterar(self, pagamento: Pagamento) -> None:
         pass
 
     def excluir(self, id: int) -> None:

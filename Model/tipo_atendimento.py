@@ -1,5 +1,3 @@
-from atendimento import Atendimento
-
 class TipoAtendimento:
     def __init__(self, id: int, nome: str, descricao: str):
         self.__id = id

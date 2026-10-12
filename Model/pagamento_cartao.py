@@ -1,6 +1,6 @@
-from pessoa import Pessoa
-from pagamento import Pagamento
 from datetime import date
+
+from .pagamento import Pagamento
 
 class PagamentoCartao(Pagamento):
     def __init__(self, id: int, data_pagamento: date, valor_pago: float, numero_cartao: str, bandeira: str):

@@ -1,6 +1,6 @@
 from datetime import date, time
-from pessoa import Pessoa
-from profissional import Profissional
+
+from .profissional import Profissional
 
 
 class Clinica:

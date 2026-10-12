@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import date
 
+
 class Pagamento(ABC):
     def __init__(self, id: int, data_pagamento: date, valor_pago: float):
         self.__id = id

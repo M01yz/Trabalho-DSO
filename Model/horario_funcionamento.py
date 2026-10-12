@@ -1,5 +1,4 @@
-from clinica import Clinica
-from datetime import date, time
+from datetime import time
 
 class HorarioFuncionamento:
     def __init__(self, dia_semana: str, hora_abertura: time, hora_fechamento: time):

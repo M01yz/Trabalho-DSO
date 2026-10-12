@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+
 class Pessoa(ABC):
     def __init__(self, nome: str, cpf: str, celular: str):
         self.__nome = nome

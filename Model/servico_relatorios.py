@@ -1,6 +1,5 @@
-from servico_registro import ServicoRegistro
+class ServicoRelatorios:
 
-class ServicoAgendamento(ServicoRegistro):
     def clinicas_mais_atendimentos(self) -> list:
         pass
 

@@ -1,7 +1,7 @@
-from pessoa import Pessoa
+from .pessoa import Pessoa
 
 class Profissional(Pessoa):
-    def __init__(self, nome, cpf, celular, especialidade: str, registro_profissional: str):
+    def __init__(self, nome: str, cpf: str, celular: str, especialidade: str, registro_profissional: str):
         super().__init__(nome, cpf, celular)
         self.__especialidade = especialidade
         self.__registro_profissional = registro_profissional

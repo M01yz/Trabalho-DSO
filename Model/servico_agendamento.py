@@ -1,17 +1,13 @@
-from servico_registro import ServicoRegistro
-from atendimento import Atendimento
+from .atendimento import Atendimento
 
-class ServicoAgendamento(ServicoRegistro):
-    def registrar(self, dados: dict) -> object:
+class ServicoAgendamento:
+    def agendar(self, atendimento: Atendimento) -> Atendimento:
         pass
 
-    def alterar(self, id: int, dados: dict) -> None:
+    def alterar(self, atendimento: Atendimento) -> None:
         pass
 
-    def excluir(self, id: int) -> None:
-        pass
-
-    def listar(self) -> list:
+    def cancelar(self, id: int) -> None:
         pass
 
     def validar_agendamento(self, atendimento: Atendimento) -> None:
