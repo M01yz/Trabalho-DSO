@@ -17,5 +17,4 @@ class PagamentoPix(Pagamento):
         self.__pessoa = pessoa
 
     def validar_modalidade(self) -> None:
-        if not isinstance(self.__pessoa, Pessoa):
-            raise ValueError
+        pass

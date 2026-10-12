@@ -25,5 +25,4 @@ class PagamentoCartao(Pagamento):
         self.__bandeira = bandeira
 
     def validar_modalidade(self) -> None:
-        if not (isinstance(self.__numero_cartao, str) and isinstance(self.__bandeira, str)):
-            raise ValueError
+        pass
