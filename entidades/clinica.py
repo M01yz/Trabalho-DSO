@@ -1,5 +1,5 @@
 from datetime import date, time
-
+from .horario_funcionamento import HorarioFuncionamento
 from .profissional import Profissional
 
 
@@ -9,6 +9,7 @@ class Clinica:
         self.__nome = nome
         self.__cidade = cidade
         self.__descricao = descricao
+        self.__profissionais = []
 
     @property
     def id(self):
@@ -43,10 +44,10 @@ class Clinica:
         self.__descricao = descricao
 
     def dentro_do_expediente(self, data: date, inicio: time, fim: time) -> bool:
-        pass
+        return horario_funcionamento.contem(inicio, fim)
 
     def vincular_profissional(self, prof: Profissional) -> None:
-        pass
+        self.__profissionais.append(prof)
 
     def desvincular_profissional(self, prof: Profissional) -> None:
-        pass
+        self.__profissionais.remove(prof)

@@ -32,8 +32,10 @@ class Pessoa(ABC):
         self.__celular = celular
 
     def validar_cpf(self) -> bool:
-        # depois eu faço
-        pass
+        if len(self.cpf) != 11 or not self.cpf.isdigit():
+            return False
+        else:
+            return True
 
     @abstractmethod
     def tipo_pessoa(self) -> str:

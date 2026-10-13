@@ -22,17 +22,103 @@ class RepositorioSistema:
         self.__procedimentos = procedimentos if procedimentos is not None else []
         self.__pagamentos = pagamentos if pagamentos is not None else []
 
-    def salvar(self, entidade: object) -> None:
-        pass
+    def salvar(
+        self,
+        entidade: Atendimento | Clinica | Pagamento | Pessoa | Procedimento | TipoAtendimento,
+    ) -> None:
+        if isinstance(entidade, Atendimento):
+            self.__atendimentos.append(entidade)
+        elif isinstance(entidade, Clinica):
+            self.__clinicas.append(entidade)
+        elif isinstance(entidade, TipoAtendimento):
+            self.__tipos_atendimento.append(entidade)
+        elif isinstance(entidade, Procedimento):
+            self.__procedimentos.append(entidade)
+        elif isinstance(entidade, Pagamento):
+            self.__pagamentos.append(entidade)
+        elif isinstance(entidade, Pessoa):
+            self.__pessoas.append(entidade)
+        else:
+            raise TypeError(f"Tipo de entidade não suportado: {type(entidade).__name__}")
 
-    def buscar_por_id(self, tipo: str, chave: object) -> object:
-        pass
+    def buscar_por_id(self, tipo: str, chave: object) -> object | None:
+        tipo_normalizado = tipo.strip().lower()
+        listas = {
+            "atendimento": (self.__atendimentos, "id"),
+            "atendimentos": (self.__atendimentos, "id"),
+            "clinica": (self.__clinicas, "id"),
+            "clinicas": (self.__clinicas, "id"),
+            "tipo_atendimento": (self.__tipos_atendimento, "id"),
+            "tipos_atendimento": (self.__tipos_atendimento, "id"),
+            "procedimento": (self.__procedimentos, "id"),
+            "procedimentos": (self.__procedimentos, "id"),
+            "pagamento": (self.__pagamentos, "id"),
+            "pagamentos": (self.__pagamentos, "id"),
+            "pessoa": (self.__pessoas, "cpf"),
+            "pessoas": (self.__pessoas, "cpf"),
+        }
+
+        if tipo_normalizado not in listas:
+            raise ValueError(f"Tipo de entidade não suportado: {tipo}")
+
+        entidades, atributo_chave = listas[tipo_normalizado]
+        return next(
+            (entidade for entidade in entidades if getattr(entidade, atributo_chave) == chave),
+            None,
+        )
 
     def listar(self, tipo: str) -> list:
-        pass
+        tipo_normalizado = tipo.strip().lower()
+        listas = {
+            "atendimento": self.__atendimentos,
+            "atendimentos": self.__atendimentos,
+            "clinica": self.__clinicas,
+            "clinicas": self.__clinicas,
+            "tipo_atendimento": self.__tipos_atendimento,
+            "tipos_atendimento": self.__tipos_atendimento,
+            "procedimento": self.__procedimentos,
+            "procedimentos": self.__procedimentos,
+            "pagamento": self.__pagamentos,
+            "pagamentos": self.__pagamentos,
+            "pessoa": self.__pessoas,
+            "pessoas": self.__pessoas,
+        }
+
+        if tipo_normalizado not in listas:
+            raise ValueError(f"Tipo de entidade não suportado: {tipo}")
+
+        return listas[tipo_normalizado]
 
     def atualizar(self, entidade: object) -> None:
-        pass
+        if entidade in self.__atendimentos:
+            index = self.__atendimentos.buscar_por_id(atendimento,entidade)
+            self.__atendimentos[index] = entidade
+        elif entidade in self.__clinicas:
+            index = self.__clinicas.buscar_por_id(clinica,entidade)
+            self.__clinicas[index] = entidade
+        elif entidade in self.__tipos_atendimento:
+            index = self.__tipos_atendimento.buscar_por_id(tipo_atendimento,entidade)
+            self.__tipos_atendimento[index] = entidade
+        elif entidade in self.__procedimentos:
+            index = self.__procedimentos.buscar_por_id(procedimento,entidade)
+            self.__procedimentos[index] = entidade
+        elif entidade in self.__pagamentos:
+            index = self.__pagamentos.buscar_por_id(pagamento,entidade)
+            self.__pagamentos[index] = entidade
+        elif entidade in self.__pessoas:
+            index = self.__pessoas.buscar_por_id(pessoa,entidade)
+            self.__pessoas[index] = entidade
 
     def excluir(self, entidade: object) -> None:
-        pass
+        if entidade in self.__atendimentos:
+            self.__atendimentos.remove(entidade)
+        elif entidade in self.__clinicas:
+            self.__clinicas.remove(entidade)
+        elif entidade in self.__tipos_atendimento:
+            self.__tipos_atendimento.remove(entidade)
+        elif entidade in self.__procedimentos:
+            self.__procedimentos.remove(entidade)
+        elif entidade in self.__pagamentos:
+            self.__pagamentos.remove(entidade)
+        elif entidade in self.__pessoas:
+            self.__pessoas.remove(entidade)

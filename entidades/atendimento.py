@@ -1,4 +1,5 @@
 from .horario_funcionamento import HorarioFuncionamento
+from .profissional import Profissional
 from datetime import date, time
 
 
@@ -9,6 +10,7 @@ class Atendimento:
         self.__hora_inicio = hora_inicio
         self.__hora_fim = hora_fim
         self.__valor = valor
+        self.__profissional: Profissional | None = None
 
     @property
     def id(self):
@@ -50,8 +52,20 @@ class Atendimento:
     def valor(self, valor):
         self.__valor = valor
 
+    @property
+    def profissional(self) -> Profissional | None:
+        return self.__profissional
+
+    @profissional.setter
+    def profissional(self, profissional: Profissional | None) -> None:
+        self.__profissional = profissional
+
+    @property
+    def possui_profissional(self) -> bool:
+        return self.__profissional is not None
+
     def horario_valido(self, horario_funcionamento: HorarioFuncionamento) -> bool:
-        pass
+        return horario_funcionamento.contem(self.hora_inicio, self.hora_fim)
 
     def total_pago(self) -> float:
         pass

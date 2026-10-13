@@ -31,4 +31,8 @@ class HorarioFuncionamento:
         self.__hora_fechamento = hora_fechamento
 
     def contem(self, inicio: time, fim: time) -> bool:
-        pass
+        return (
+            inicio < fim
+            and self.hora_abertura <= inicio
+            and fim <= self.hora_fechamento
+        )
