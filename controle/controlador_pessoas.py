@@ -1,9 +1,9 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from Model.paciente import Paciente
-    from Model.profissional import Profissional
-    from Model.responsavel import ResponsavelLegal
+    from entidades.paciente import Paciente
+    from entidades.profissional import Profissional
+    from entidades.responsavel import ResponsavelLegal
 
 
 class ControladorPessoas:

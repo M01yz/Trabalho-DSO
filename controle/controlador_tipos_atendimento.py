@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from Model.tipo_atendimento import TipoAtendimento
+    from entidades.tipo_atendimento import TipoAtendimento
 
 
 class ControladorTiposAtendimento:

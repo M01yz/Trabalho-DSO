@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from Model.atendimento import Atendimento
+    from entidades.atendimento import Atendimento
 
 
 class ControladorAtendimentos:
