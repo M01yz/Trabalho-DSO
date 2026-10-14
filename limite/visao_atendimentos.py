@@ -12,7 +12,7 @@ class VisaoAtendimentos:
 
     def solicitar_agendamento(self) -> dict:
         return {
-            "id": solicitar_inteiro("ID do atendimento: "),
+            "clinica_id": solicitar_inteiro("ID da clínica: "),
             "data": solicitar_data("Data (DD/MM/AAAA): "),
             "hora_inicio": solicitar_hora("Horário de início (HH:MM): "),
             "hora_fim": solicitar_hora("Horário de término (HH:MM): "),

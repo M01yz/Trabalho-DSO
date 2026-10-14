@@ -23,10 +23,18 @@ class VisaoPagamentos:
         modalidade = modalidades[opcao]
         dados = {
             "modalidade": modalidade,
+            "atendimento_id": solicitar_inteiro("ID do atendimento: "),
             "id": solicitar_inteiro("ID do pagamento: "),
             "data_pagamento": solicitar_data("Data do pagamento (DD/MM/AAAA): "),
             "valor_pago": float(solicitar_decimal("Valor pago: ")),
         }
+
+        while True:
+            parcelas = solicitar_inteiro("Número de parcelas (1 a 3, sem juros): ")
+            if 1 <= parcelas <= 3:
+                dados["parcelas"] = parcelas
+                break
+            print("O pagamento pode ser parcelado em até 3 vezes sem juros.")
 
         if modalidade == "pix":
             dados["cpf_pagador"] = solicitar_texto("CPF do pagador: ")

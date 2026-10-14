@@ -1,6 +1,13 @@
+from __future__ import annotations
+
 from datetime import date, time
+from typing import TYPE_CHECKING
+
 from .horario_funcionamento import HorarioFuncionamento
 from .profissional import Profissional
+
+if TYPE_CHECKING:
+    from .atendimento import Atendimento
 
 
 class Clinica:
@@ -10,6 +17,7 @@ class Clinica:
         self.__cidade = cidade
         self.__descricao = descricao
         self.__profissionais = []
+        self.__atendimentos: list[Atendimento] = []
 
     @property
     def id(self):
@@ -51,3 +59,14 @@ class Clinica:
 
     def desvincular_profissional(self, prof: Profissional) -> None:
         self.__profissionais.remove(prof)
+
+    @property
+    def atendimentos(self) -> list[Atendimento]:
+        return self.__atendimentos
+
+    def vincular_atendimento(self, atendimento: Atendimento) -> None:
+        if atendimento not in self.__atendimentos:
+            self.__atendimentos.append(atendimento)
+
+    def desvincular_atendimento(self, atendimento: Atendimento) -> None:
+        self.__atendimentos.remove(atendimento)

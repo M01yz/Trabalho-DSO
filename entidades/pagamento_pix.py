@@ -4,8 +4,16 @@ from .pagamento import Pagamento
 
 
 class PagamentoPix(Pagamento):
-    def __init__(self, id: int, data_pagamento: date, valor_pago: float, cpf_pagador: str):
-        super().__init__(id, data_pagamento, valor_pago)
+    def __init__(
+        self,
+        id: int,
+        data_pagamento: date,
+        valor_pago: float,
+        cpf_pagador: str,
+        parcelas: int = 1,
+        atendimento_id: int | None = None,
+    ):
+        super().__init__(id, data_pagamento, valor_pago, parcelas, atendimento_id)
         self.__cpf_pagador = cpf_pagador
 
     @property

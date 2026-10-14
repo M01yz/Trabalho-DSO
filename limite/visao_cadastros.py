@@ -58,6 +58,7 @@ class VisaoCadastros:
             dados["cpf"] = solicitar_texto("CPF: ")
             dados["celular"] = solicitar_texto("Celular: ")
         elif tipo == "procedimento":
+            dados["tipo_atendimento_id"] = solicitar_inteiro("ID do tipo de atendimento: ")
             dados["descricao"] = solicitar_texto("Descrição: ")
             dados["custo"] = float(solicitar_decimal("Custo: "))
 

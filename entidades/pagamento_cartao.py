@@ -3,8 +3,17 @@ from datetime import date
 from .pagamento import Pagamento
 
 class PagamentoCartao(Pagamento):
-    def __init__(self, id: int, data_pagamento: date, valor_pago: float, numero_cartao: str, bandeira: str):
-        super().__init__(id, data_pagamento, valor_pago)
+    def __init__(
+        self,
+        id: int,
+        data_pagamento: date,
+        valor_pago: float,
+        numero_cartao: str,
+        bandeira: str,
+        parcelas: int = 1,
+        atendimento_id: int | None = None,
+    ):
+        super().__init__(id, data_pagamento, valor_pago, parcelas, atendimento_id)
         self.__numero_cartao = numero_cartao
         self.__bandeira = bandeira
 
