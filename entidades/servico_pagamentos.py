@@ -246,13 +246,7 @@ class ServicoPagamentos:
             atendimento_atual.desvincular_pagamento(pagamento_existente)
         atendimento_novo.vincular_pagamento(pagamento)
 
-        pagamentos = self.__repositorio_sistema.listar("pagamentos")
-        indice = next(
-            indice
-            for indice, item in enumerate(pagamentos)
-            if item is pagamento_existente
-        )
-        pagamentos[indice] = pagamento
+        self.__repositorio_sistema.atualizar(pagamento)
 
     def excluir(self, id: int) -> None:
         pagamento = self.__repositorio_sistema.buscar_por_id("pagamentos", id)

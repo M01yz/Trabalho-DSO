@@ -4,6 +4,7 @@ from .pagamento import Pagamento
 from .pessoa import Pessoa
 from .procedimento import Procedimento
 from .tipo_atendimento import TipoAtendimento
+from exceptions.erro_cadastro_duplicado import ErroCadastroDuplicado
 
 
 class RepositorioSistema:
@@ -16,31 +17,65 @@ class RepositorioSistema:
         procedimentos: list[Procedimento] | None = None,
         pagamentos: list[Pagamento] | None = None,
     ):
-        self.__pessoas = pessoas if pessoas is not None else []
-        self.__clinicas = clinicas if clinicas is not None else []
-        self.__tipos_atendimento = tipos_atendimento if tipos_atendimento is not None else []
-        self.__atendimentos = atendimentos if atendimentos is not None else []
-        self.__procedimentos = procedimentos if procedimentos is not None else []
-        self.__pagamentos = pagamentos if pagamentos is not None else []
+        self.__pessoas = list(pessoas) if pessoas is not None else []
+        self.__clinicas = list(clinicas) if clinicas is not None else []
+        self.__tipos_atendimento = (
+            list(tipos_atendimento) if tipos_atendimento is not None else []
+        )
+        self.__atendimentos = list(atendimentos) if atendimentos is not None else []
+        self.__procedimentos = list(procedimentos) if procedimentos is not None else []
+        self.__pagamentos = list(pagamentos) if pagamentos is not None else []
 
     def salvar(
         self,
         entidade: Atendimento | Clinica | Pagamento | Pessoa | Procedimento | TipoAtendimento,
     ) -> None:
         if isinstance(entidade, Atendimento):
-            self.__atendimentos.append(entidade)
+            entidades, tipo_busca, nome_entidade = (
+                self.__atendimentos,
+                "atendimentos",
+                "atendimento",
+            )
         elif isinstance(entidade, Clinica):
-            self.__clinicas.append(entidade)
+            entidades, tipo_busca, nome_entidade = (
+                self.__clinicas,
+                "clinicas",
+                "clínica",
+            )
         elif isinstance(entidade, TipoAtendimento):
-            self.__tipos_atendimento.append(entidade)
+            entidades, tipo_busca, nome_entidade = (
+                self.__tipos_atendimento,
+                "tipos_atendimento",
+                "tipo de atendimento",
+            )
         elif isinstance(entidade, Procedimento):
-            self.__procedimentos.append(entidade)
+            entidades, tipo_busca, nome_entidade = (
+                self.__procedimentos,
+                "procedimentos",
+                "procedimento",
+            )
         elif isinstance(entidade, Pagamento):
-            self.__pagamentos.append(entidade)
+            entidades, tipo_busca, nome_entidade = (
+                self.__pagamentos,
+                "pagamentos",
+                "pagamento",
+            )
         elif isinstance(entidade, Pessoa):
-            self.__pessoas.append(entidade)
+            entidades, tipo_busca, nome_entidade = (
+                self.__pessoas,
+                "pessoas",
+                "pessoa",
+            )
         else:
             raise TypeError(f"Tipo de entidade não suportado: {type(entidade).__name__}")
+
+        chave = self.__chave(entidade)
+        if self.buscar_por_id(tipo_busca, chave) is not None:
+            raise ErroCadastroDuplicado(
+                f"Já existe um cadastro de {nome_entidade} "
+                f"com o identificador {chave}."
+            )
+        entidades.append(entidade)
 
     def buscar_por_id(self, tipo: str, chave: object) -> object | None:
         tipo_normalizado = tipo.strip().lower()
@@ -88,7 +123,7 @@ class RepositorioSistema:
         if tipo_normalizado not in listas:
             raise ValueError(f"Tipo de entidade não suportado: {tipo}")
 
-        return listas[tipo_normalizado]
+        return list(listas[tipo_normalizado])
 
     def atualizar(
         self,
@@ -118,6 +153,12 @@ class RepositorioSistema:
         raise ValueError(
             f"{type(entidade).__name__} com {atributo_chave} {chave} não encontrado."
         )
+
+    @staticmethod
+    def __chave(entidade: object) -> object:
+        if isinstance(entidade, Pessoa):
+            return entidade.cpf
+        return getattr(entidade, "id")
 
     def excluir(self, entidade: object) -> None:
         if entidade in self.__atendimentos:

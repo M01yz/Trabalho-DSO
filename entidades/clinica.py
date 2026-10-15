@@ -122,7 +122,7 @@ class Clinica:
 
     @property
     def atendimentos(self) -> list[Atendimento]:
-        return self.__atendimentos
+        return list(self.__atendimentos)
 
     def vincular_atendimento(self, atendimento: Atendimento) -> None:
         if atendimento not in self.__atendimentos:

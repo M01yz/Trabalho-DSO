@@ -187,18 +187,27 @@ class Atendimento:
 
     @property
     def procedimentos(self) -> list[Procedimento]:
-        return self.__procedimentos
+        return list(self.__procedimentos)
 
     def vincular_procedimento(self, procedimento: Procedimento) -> None:
         if procedimento not in self.__procedimentos:
             self.__procedimentos.append(procedimento)
 
     def desvincular_procedimento(self, procedimento: Procedimento) -> None:
+        if procedimento not in self.__procedimentos:
+            raise ErroCadastroInvalido(
+                "O procedimento não está vinculado a este atendimento."
+            )
+        if self.valor - procedimento.custo < self.total_pago():
+            raise ErroPagamentoInvalido(
+                "Não é possível remover o procedimento: o total pago "
+                "ficaria acima do valor atualizado do atendimento."
+            )
         self.__procedimentos.remove(procedimento)
 
     @property
     def pagamentos(self) -> list[Pagamento]:
-        return self.__pagamentos
+        return list(self.__pagamentos)
 
     def vincular_pagamento(self, pagamento: Pagamento) -> None:
         if pagamento in self.__pagamentos:

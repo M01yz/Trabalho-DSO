@@ -4,6 +4,7 @@ from math import isfinite
 
 from exceptions.erro_cadastro_duplicado import ErroCadastroDuplicado
 from exceptions.erro_cadastro_invalido import ErroCadastroInvalido
+from exceptions.erro_pagamento_invalido import ErroPagamentoInvalido
 
 from entidades.atendimento import Atendimento
 from entidades.procedimento import Procedimento
@@ -142,6 +143,20 @@ class ControladorProcedimentos:
             raise ErroCadastroInvalido(
                 "O custo do procedimento deve ser maior que zero."
             )
+        atendimentos_vinculados = [
+            atendimento
+            for atendimento in self.__repositorio_sistema.listar("atendimentos")
+            if procedimento in atendimento.procedimentos
+        ]
+        if any(
+            atendimento.valor - procedimento.custo + custo
+            < atendimento.total_pago()
+            for atendimento in atendimentos_vinculados
+        ):
+            raise ErroPagamentoInvalido(
+                "Não é possível reduzir o custo do procedimento: o total pago "
+                "ficaria acima do valor atualizado de um atendimento."
+            )
 
         procedimento.descricao = descricao
         procedimento.custo = custo
@@ -153,9 +168,22 @@ class ControladorProcedimentos:
         if not isinstance(procedimento, Procedimento):
             raise ValueError(f"Procedimento com ID {id} não encontrado.")
 
-        for atendimento in self.__repositorio_sistema.listar("atendimentos"):
-            if procedimento in atendimento.procedimentos:
-                atendimento.desvincular_procedimento(procedimento)
+        atendimentos_vinculados = [
+            atendimento
+            for atendimento in self.__repositorio_sistema.listar("atendimentos")
+            if procedimento in atendimento.procedimentos
+        ]
+        if any(
+            atendimento.valor - procedimento.custo < atendimento.total_pago()
+            for atendimento in atendimentos_vinculados
+        ):
+            raise ErroPagamentoInvalido(
+                "Não é possível excluir o procedimento: o total pago "
+                "ficaria acima do valor atualizado de um atendimento."
+            )
+
+        for atendimento in atendimentos_vinculados:
+            atendimento.desvincular_procedimento(procedimento)
 
         self.__repositorio_sistema.excluir(procedimento)
 
