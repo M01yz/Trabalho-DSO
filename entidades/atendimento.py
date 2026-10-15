@@ -253,3 +253,62 @@ class Atendimento:
 
     def saldo_restante(self) -> float:
         return self.valor - self.total_pago()
+
+    def atualizar_dados(
+        self,
+        data: date,
+        hora_inicio: time,
+        hora_fim: time,
+        valor_inicial: float,
+        paciente: Paciente,
+        tipo_atendimento: TipoAtendimento,
+        responsavel_legal: ResponsavelLegal | None,
+        profissional: Profissional | None,
+    ) -> None:
+        if not isinstance(data, date) or isinstance(data, datetime):
+            raise ErroHorarioInvalido("A data do atendimento é inválida.")
+        if not isinstance(hora_inicio, time):
+            raise ErroHorarioInvalido("O horário de início é inválido.")
+        if not isinstance(hora_fim, time):
+            raise ErroHorarioInvalido("O horário de término é inválido.")
+        if (
+            not isinstance(valor_inicial, (int, float))
+            or isinstance(valor_inicial, bool)
+            or not isfinite(valor_inicial)
+            or valor_inicial <= 0
+        ):
+            raise ErroCadastroInvalido(
+                "O valor do atendimento deve ser um número maior que zero."
+            )
+
+        self.__validar_vinculo(paciente, Paciente, "um paciente")
+        self.__validar_vinculo(
+            tipo_atendimento,
+            TipoAtendimento,
+            "um tipo de atendimento",
+        )
+        if responsavel_legal is not None:
+            self.__validar_vinculo(
+                responsavel_legal,
+                ResponsavelLegal,
+                "um responsável legal",
+            )
+        if profissional is not None:
+            self.__validar_vinculo(profissional, Profissional, "um profissional")
+
+        valor_total = valor_inicial + sum(
+            procedimento.custo for procedimento in self.__procedimentos
+        )
+        if valor_total < self.total_pago():
+            raise ErroPagamentoInvalido(
+                "O valor do atendimento não pode ser menor que o total pago."
+            )
+
+        self.__data = data
+        self.__hora_inicio = hora_inicio
+        self.__hora_fim = hora_fim
+        self.__valor_inicial = valor_inicial
+        self.__paciente = paciente
+        self.__tipo_atendimento = tipo_atendimento
+        self.__responsavel_legal = responsavel_legal
+        self.__profissional = profissional

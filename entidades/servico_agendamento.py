@@ -114,23 +114,45 @@ class ServicoAgendamento:
             atendimento,
             ignorar_id=atendimento_existente.id,
         )
-        atendimento_existente.valor = atendimento.valor_inicial
-        atendimento_existente.data = atendimento.data
-        atendimento_existente.hora_inicio = atendimento.hora_inicio
-        atendimento_existente.hora_fim = atendimento.hora_fim
-        atendimento_existente.paciente = atendimento.paciente
-        atendimento_existente.tipo_atendimento = atendimento.tipo_atendimento
-        atendimento_existente.responsavel_legal = atendimento.responsavel_legal
-        atendimento_existente.profissional = atendimento.profissional
+        atendimento_existente.atualizar_dados(
+            data=atendimento.data,
+            hora_inicio=atendimento.hora_inicio,
+            hora_fim=atendimento.hora_fim,
+            valor_inicial=atendimento.valor_inicial,
+            paciente=atendimento.paciente,
+            tipo_atendimento=atendimento.tipo_atendimento,
+            responsavel_legal=atendimento.responsavel_legal,
+            profissional=atendimento.profissional,
+        )
 
     def cancelar(self, id: int) -> None:
         atendimento = self.__repositorio_sistema.buscar_por_id("atendimentos", id)
         if not isinstance(atendimento, Atendimento):
             raise ErroCadastroInvalido(f"Atendimento com ID {id} não encontrado.")
 
-        self.__repositorio_sistema.excluir(atendimento)
+        if any(
+            pagamento.atendimento_id == id
+            for pagamento in self.__repositorio_sistema.listar("pagamentos")
+        ):
+            raise ErroCadastroInvalido(
+                "Não é possível cancelar um atendimento que possui pagamentos."
+            )
+        if atendimento.pagamentos:
+            raise ErroCadastroInvalido(
+                "Não é possível cancelar um atendimento que possui pagamentos."
+            )
+        if atendimento.procedimentos:
+            raise ErroCadastroInvalido(
+                "Não é possível cancelar um atendimento que possui procedimentos."
+            )
+
         if atendimento.clinica is not None:
+            if atendimento not in atendimento.clinica.atendimentos:
+                raise ErroCadastroInvalido(
+                    "O atendimento não está vinculado à clínica informada."
+                )
             atendimento.clinica.desvincular_atendimento(atendimento)
+        self.__repositorio_sistema.excluir(atendimento)
 
     def validar_agendamento(
         self,

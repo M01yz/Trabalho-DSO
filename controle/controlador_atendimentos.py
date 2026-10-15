@@ -158,25 +158,7 @@ class ControladorAtendimentos:
         atendimento_id = (
             id if id is not None else self.__visao.solicitar_id_atendimento()
         )
-        atendimento = self.__repositorio_sistema.buscar_por_id(
-            "atendimentos",
-            atendimento_id,
-        )
-        if not isinstance(atendimento, Atendimento):
-            raise ErroCadastroInvalido(
-                f"Atendimento com ID {atendimento_id} não encontrado."
-            )
-        if any(
-            pagamento.atendimento_id == atendimento_id
-            for pagamento in self.__repositorio_sistema.listar("pagamentos")
-        ):
-            raise ErroCadastroInvalido(
-                "Não é possível excluir um atendimento que possui pagamentos."
-            )
-
-        self.__repositorio_sistema.excluir(atendimento)
-        if atendimento.clinica is not None:
-            atendimento.clinica.desvincular_atendimento(atendimento)
+        self.__servico_agendamento.cancelar(atendimento_id)
 
     def listar(self) -> list:
         return self.__repositorio_sistema.listar("atendimentos")
