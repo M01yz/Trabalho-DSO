@@ -25,7 +25,7 @@ class ControladorAtendimentos:
         self.__controlador_procedimentos = (
             controlador_procedimentos
             if controlador_procedimentos is not None
-            else ControladorProcedimentos()
+            else ControladorProcedimentos(repositorio_sistema, self.__visao)
         )
 
     def incluir(
@@ -42,13 +42,7 @@ class ControladorAtendimentos:
 
         if opcao == 2:
             atendimento_id = self.__visao.solicitar_id_atendimento()
-            dados_procedimento = (
-                dados if dados is not None else self.__visao.solicitar_procedimento()
-            )
-            return self.__controlador_procedimentos.incluir(
-                atendimento_id,
-                dados_procedimento,
-            )
+            return self.__controlador_procedimentos.incluir(atendimento_id, dados)
 
         if opcao == 3:
             atendimentos = self.listar()

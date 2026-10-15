@@ -52,4 +52,13 @@ class ServicoRelatorios:
         ]
 
     def procedimentos_por_custo(self) -> list:
-        pass
+        relatorio = [
+            {
+                "id": procedimento.id,
+                "descricao": procedimento.descricao,
+                "custo": procedimento.custo,
+                "tipo_atendimento": procedimento.tipo_atendimento.nome,
+            }
+            for procedimento in self.__repositorio_sistema.listar("procedimentos")
+        ]
+        return sorted(relatorio, key=lambda procedimento: procedimento["custo"], reverse=True)

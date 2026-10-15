@@ -27,12 +27,20 @@ class VisaoAtendimentos:
     def solicitar_id_atendimento(self) -> int:
         return solicitar_inteiro("ID do atendimento: ")
 
-    def solicitar_procedimento(self) -> dict:
+    def solicitar_procedimento(self, id_procedimento: int | None = None) -> dict:
         return {
-            "id": solicitar_inteiro("ID do procedimento: "),
+            "id": (
+                id_procedimento
+                if id_procedimento is not None
+                else solicitar_inteiro("ID do procedimento: ")
+            ),
+            "tipo_atendimento_id": solicitar_inteiro("ID do tipo de atendimento: "),
             "descricao": solicitar_texto("Descrição do procedimento: "),
             "custo": float(solicitar_decimal("Custo: ")),
         }
 
     def exibir_atendimentos(self, itens: list) -> None:
+        exibir_tabela(itens)
+
+    def exibir_procedimentos(self, itens: list) -> None:
         exibir_tabela(itens)
