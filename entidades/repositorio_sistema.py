@@ -5,6 +5,7 @@ from .pessoa import Pessoa
 from .procedimento import Procedimento
 from .tipo_atendimento import TipoAtendimento
 
+
 class RepositorioSistema:
     def __init__(
         self,
@@ -89,25 +90,34 @@ class RepositorioSistema:
 
         return listas[tipo_normalizado]
 
-    def atualizar(self, entidade: object) -> None:
-        if entidade in self.__atendimentos:
-            index = self.__atendimentos.buscar_por_id(atendimento,entidade)
-            self.__atendimentos[index] = entidade
-        elif entidade in self.__clinicas:
-            index = self.__clinicas.buscar_por_id(clinica,entidade)
-            self.__clinicas[index] = entidade
-        elif entidade in self.__tipos_atendimento:
-            index = self.__tipos_atendimento.buscar_por_id(tipo_atendimento,entidade)
-            self.__tipos_atendimento[index] = entidade
-        elif entidade in self.__procedimentos:
-            index = self.__procedimentos.buscar_por_id(procedimento,entidade)
-            self.__procedimentos[index] = entidade
-        elif entidade in self.__pagamentos:
-            index = self.__pagamentos.buscar_por_id(pagamento,entidade)
-            self.__pagamentos[index] = entidade
-        elif entidade in self.__pessoas:
-            index = self.__pessoas.buscar_por_id(pessoa,entidade)
-            self.__pessoas[index] = entidade
+    def atualizar(
+        self,
+        entidade: Atendimento | Clinica | Pagamento | Pessoa | Procedimento | TipoAtendimento,
+    ) -> None:
+        if isinstance(entidade, Atendimento):
+            entidades, atributo_chave = self.__atendimentos, "id"
+        elif isinstance(entidade, Clinica):
+            entidades, atributo_chave = self.__clinicas, "id"
+        elif isinstance(entidade, TipoAtendimento):
+            entidades, atributo_chave = self.__tipos_atendimento, "id"
+        elif isinstance(entidade, Procedimento):
+            entidades, atributo_chave = self.__procedimentos, "id"
+        elif isinstance(entidade, Pagamento):
+            entidades, atributo_chave = self.__pagamentos, "id"
+        elif isinstance(entidade, Pessoa):
+            entidades, atributo_chave = self.__pessoas, "cpf"
+        else:
+            raise TypeError(f"Tipo de entidade não suportado: {type(entidade).__name__}")
+
+        chave = getattr(entidade, atributo_chave)
+        for indice, entidade_existente in enumerate(entidades):
+            if getattr(entidade_existente, atributo_chave) == chave:
+                entidades[indice] = entidade
+                return
+
+        raise ValueError(
+            f"{type(entidade).__name__} com {atributo_chave} {chave} não encontrado."
+        )
 
     def excluir(self, entidade: object) -> None:
         if entidade in self.__atendimentos:

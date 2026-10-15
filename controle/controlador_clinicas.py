@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from entidades.clinica import Clinica
+from entidades.horario_funcionamento import HorarioFuncionamento
 from entidades.repositorio_sistema import RepositorioSistema
 from limite.visao_cadastros import VisaoCadastros
 
@@ -29,6 +30,10 @@ class ControladorClinicas:
             cidade=dados_clinica["cidade"],
             descricao=dados_clinica["descricao"],
         )
+        if "horarios_funcionamento" in dados_clinica:
+            clinica.horarios_funcionamento = self.__converter_horarios(
+                dados_clinica["horarios_funcionamento"]
+            )
         self.__repositorio_sistema.salvar(clinica)
         return clinica
 
@@ -43,6 +48,10 @@ class ControladorClinicas:
             clinica.cidade = dados["cidade"]
         if "descricao" in dados:
             clinica.descricao = dados["descricao"]
+        if "horarios_funcionamento" in dados:
+            clinica.horarios_funcionamento = self.__converter_horarios(
+                dados["horarios_funcionamento"]
+            )
 
     def excluir(self, id: int | None = None) -> None:
         clinica_id = id if id is not None else self.__visao.solicitar_id_clinica()
@@ -53,3 +62,16 @@ class ControladorClinicas:
 
     def listar(self) -> list:
         return self.__repositorio_sistema.listar("clinicas")
+
+    @staticmethod
+    def __converter_horarios(horarios: list) -> list[HorarioFuncionamento]:
+        return [
+            horario
+            if isinstance(horario, HorarioFuncionamento)
+            else HorarioFuncionamento(
+                horario["dia_semana"],
+                horario["hora_abertura"],
+                horario["hora_fechamento"],
+            )
+            for horario in horarios
+        ]

@@ -1,4 +1,12 @@
-from ._entrada import exibir_tabela, solicitar_data, solicitar_decimal, solicitar_inteiro, solicitar_texto
+from ._entrada import (
+    exibir_tabela,
+    solicitar_data,
+    solicitar_decimal,
+    solicitar_hora,
+    solicitar_inteiro,
+    solicitar_texto,
+)
+from entidades.horario_funcionamento import DIAS_SEMANA
 
 
 class VisaoCadastros:
@@ -72,6 +80,9 @@ class VisaoCadastros:
             dados["descricao"] = solicitar_texto("Descrição: ")
             if tipo == "clinica":
                 dados["cidade"] = solicitar_texto("Cidade: ")
+                dados["horarios_funcionamento"] = (
+                    self.solicitar_horarios_funcionamento()
+                )
         elif tipo == "paciente":
             dados["data_nascimento"] = solicitar_data("Data de nascimento (DD/MM/AAAA): ")
             dados["nome"] = solicitar_texto("Nome: ")
@@ -113,6 +124,7 @@ class VisaoCadastros:
                 "nome": solicitar_texto("Nome: "),
                 "cidade": solicitar_texto("Cidade: "),
                 "descricao": solicitar_texto("Descrição: "),
+                "horarios_funcionamento": self.solicitar_horarios_funcionamento(),
             }
         if tipo == "tipo_atendimento":
             return {
@@ -143,6 +155,43 @@ class VisaoCadastros:
                 "custo": float(solicitar_decimal("Custo: ")),
             }
         raise ValueError(f"Tipo de cadastro inválido: {tipo}.")
+
+    def solicitar_horarios_funcionamento(self) -> list[dict]:
+        horarios = []
+        print("Informe se a clínica funciona em cada dia da semana.")
+
+        for dia in DIAS_SEMANA:
+            while True:
+                resposta = solicitar_texto(
+                    f"{dia.capitalize()} (s/n): "
+                ).casefold()
+                if resposta in ("s", "n"):
+                    break
+                print("Resposta inválida. Digite s ou n.")
+
+            if resposta == "n":
+                continue
+
+            while True:
+                abertura = solicitar_hora(
+                    f"Horário de abertura ({dia}): "
+                )
+                fechamento = solicitar_hora(
+                    f"Horário de fechamento ({dia}): "
+                )
+                if abertura < fechamento:
+                    break
+                print("A abertura deve ocorrer antes do fechamento.")
+
+            horarios.append(
+                {
+                    "dia_semana": dia,
+                    "hora_abertura": abertura,
+                    "hora_fechamento": fechamento,
+                }
+            )
+
+        return horarios
 
     def exibir_listagem(self, itens: list) -> None:
         exibir_tabela(itens)

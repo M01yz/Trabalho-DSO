@@ -1,7 +1,24 @@
 from datetime import time
 
+
+DIAS_SEMANA = (
+    "segunda-feira",
+    "terça-feira",
+    "quarta-feira",
+    "quinta-feira",
+    "sexta-feira",
+    "sábado",
+    "domingo",
+)
+
+
 class HorarioFuncionamento:
     def __init__(self, dia_semana: str, hora_abertura: time, hora_fechamento: time):
+        if dia_semana not in DIAS_SEMANA:
+            raise ValueError(f"Dia da semana inválido: {dia_semana}.")
+        if hora_abertura >= hora_fechamento:
+            raise ValueError("A abertura deve ocorrer antes do fechamento.")
+
         self.__dia_semana = dia_semana
         self.__hora_abertura = hora_abertura
         self.__hora_fechamento = hora_fechamento

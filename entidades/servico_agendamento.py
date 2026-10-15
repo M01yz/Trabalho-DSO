@@ -33,12 +33,9 @@ class ServicoAgendamento:
         if id_agendamento > 999_999:
             raise ValueError("Não há mais IDs de seis dígitos disponíveis para agendamentos.")
 
-        atendimento = Atendimento(0, data, hora_inicio, hora_fim, valor)
-        atendimento.data = data
-        atendimento.hora_inicio = hora_inicio
-        atendimento.hora_fim = hora_fim
-        atendimento.id = id_agendamento
+        atendimento = Atendimento(id_agendamento, data, hora_inicio, hora_fim, valor)
         atendimento.clinica = clinica
+        self.validar_agendamento(atendimento)
         clinica.vincular_atendimento(atendimento)
         self.__repositorio_sistema.salvar(atendimento)
         return atendimento
@@ -51,10 +48,16 @@ class ServicoAgendamento:
         if not isinstance(atendimento_existente, Atendimento):
             raise ValueError(f"Atendimento com ID {atendimento.id} não encontrado.")
 
+        atendimento.clinica = atendimento_existente.clinica
+        self.validar_agendamento(
+            atendimento,
+            ignorar_id=atendimento_existente.id,
+        )
+        atendimento_existente.valor = atendimento.valor_inicial
         atendimento_existente.data = atendimento.data
         atendimento_existente.hora_inicio = atendimento.hora_inicio
         atendimento_existente.hora_fim = atendimento.hora_fim
-        atendimento_existente.valor = atendimento.valor_inicial
+        atendimento_existente.profissional = atendimento.profissional
 
     def cancelar(self, id: int) -> None:
         atendimento = self.__repositorio_sistema.buscar_por_id("atendimentos", id)
@@ -65,12 +68,17 @@ class ServicoAgendamento:
         if atendimento.clinica is not None:
             atendimento.clinica.desvincular_atendimento(atendimento)
 
-    def validar_agendamento(self, atendimento: Atendimento) -> None:
+    def validar_agendamento(
+        self,
+        atendimento: Atendimento,
+        ignorar_id: int | None = None,
+    ) -> None:
         if type(atendimento.id) is not int or not 100_000 <= atendimento.id <= 999_999:
             raise ValueError("ID inválido.")
 
         ids_duplicados = any(
             outro_atendimento is not atendimento
+            and outro_atendimento.id != ignorar_id
             and outro_atendimento.id == atendimento.id
             for outro_atendimento in self.__repositorio_sistema.listar("atendimentos")
         )
@@ -80,10 +88,23 @@ class ServicoAgendamento:
         if atendimento.hora_inicio >= atendimento.hora_fim:
             raise ValueError("Horário Inválido.")
 
-        if not self.profissional_disponivel(atendimento):
+        if not isinstance(atendimento.clinica, Clinica):
+            raise ValueError("O atendimento deve estar associado a uma clínica.")
+        if not atendimento.clinica.dentro_do_expediente(
+            atendimento.data,
+            atendimento.hora_inicio,
+            atendimento.hora_fim,
+        ):
+            raise ValueError("O horário solicitado está fora do expediente da clínica.")
+
+        if not self.profissional_disponivel(atendimento, ignorar_id):
             raise ValueError("Não há profissionais disponíveis para o horário solicitado.")
 
-    def profissional_disponivel(self, atendimento: Atendimento) -> bool:
+    def profissional_disponivel(
+        self,
+        atendimento: Atendimento,
+        ignorar_id: int | None = None,
+    ) -> bool:
         if atendimento.hora_inicio >= atendimento.hora_fim:
             atendimento.profissional = None
             return False
@@ -97,6 +118,7 @@ class ServicoAgendamento:
 
             conflito = any(
                 outro_atendimento is not atendimento
+                and outro_atendimento.id != ignorar_id
                 and outro_atendimento.profissional is pessoa
                 and outro_atendimento.data == atendimento.data
                 and atendimento.hora_inicio < outro_atendimento.hora_fim
