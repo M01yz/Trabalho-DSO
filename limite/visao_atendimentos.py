@@ -1,4 +1,12 @@
-from ._entrada import exibir_tabela, solicitar_data, solicitar_decimal, solicitar_hora, solicitar_inteiro, solicitar_texto
+from ._entrada import (
+    exibir_tabela,
+    solicitar_data,
+    solicitar_decimal,
+    solicitar_hora,
+    solicitar_inteiro,
+    solicitar_texto,
+    solicitar_texto_opcional,
+)
 
 
 class VisaoAtendimentos:
@@ -18,6 +26,13 @@ class VisaoAtendimentos:
     def solicitar_agendamento(self) -> dict:
         return {
             "clinica_id": solicitar_inteiro("ID da clínica: "),
+            "paciente_cpf": solicitar_texto("CPF do paciente: "),
+            "tipo_atendimento_id": solicitar_inteiro(
+                "ID do tipo de atendimento: "
+            ),
+            "responsavel_legal_cpf": solicitar_texto_opcional(
+                "CPF do responsável legal (deixe vazio se não houver): "
+            ),
             "data": solicitar_data("Data (DD/MM/AAAA): "),
             "hora_inicio": solicitar_hora("Horário de início (HH:MM): "),
             "hora_fim": solicitar_hora("Horário de término (HH:MM): "),
@@ -26,6 +41,13 @@ class VisaoAtendimentos:
 
     def solicitar_dados_alteracao(self) -> dict:
         return {
+            "paciente_cpf": solicitar_texto("CPF do paciente: "),
+            "tipo_atendimento_id": solicitar_inteiro(
+                "ID do tipo de atendimento: "
+            ),
+            "responsavel_legal_cpf": solicitar_texto_opcional(
+                "CPF do responsável legal (deixe vazio se não houver): "
+            ),
             "data": solicitar_data("Data (DD/MM/AAAA): "),
             "hora_inicio": solicitar_hora("Horário de início (HH:MM): "),
             "hora_fim": solicitar_hora("Horário de término (HH:MM): "),
@@ -43,11 +65,18 @@ class VisaoAtendimentos:
                 else solicitar_inteiro("ID do procedimento: ")
             ),
             "tipo_atendimento_id": solicitar_inteiro("ID do tipo de atendimento: "),
+            "profissional_responsavel_cpf": solicitar_texto(
+                "CPF do profissional responsável: "
+            ),
             "descricao": solicitar_texto("Descrição do procedimento: "),
             "custo": float(solicitar_decimal("Custo: ")),
         }
 
     def exibir_atendimentos(self, itens: list) -> None:
+        exibir_tabela(itens)
+
+    def exibir_opcoes(self, titulo: str, itens: list) -> None:
+        print(f"\n{titulo}:")
         exibir_tabela(itens)
 
     def exibir_procedimentos(self, itens: list) -> None:

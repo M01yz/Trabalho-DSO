@@ -1,12 +1,18 @@
-from datetime import date, time
+from datetime import date, datetime, time
 from math import isfinite
 
+from exceptions.erro_atendimento_independente import ErroAtendimentoIndependente
 from exceptions.erro_conflito_agendamento import ErroConflitoAgendamento
 from exceptions.erro_horario_invalido import ErroHorarioInvalido
+from exceptions.erro_cadastro_invalido import ErroCadastroInvalido
 from .atendimento import Atendimento
 from .clinica import Clinica
+from .pagamento import Pagamento
+from .paciente import Paciente
 from .profissional import Profissional
 from .repositorio_sistema import RepositorioSistema
+from .responsavel import ResponsavelLegal
+from .tipo_atendimento import TipoAtendimento
 
 
 class ServicoAgendamento:
@@ -20,10 +26,49 @@ class ServicoAgendamento:
         hora_fim: time,
         valor: float,
         clinica_id: int,
+        paciente_cpf: str,
+        tipo_atendimento_id: int,
+        responsavel_legal_cpf: str | None = None,
     ) -> Atendimento:
         clinica = self.__repositorio_sistema.buscar_por_id("clinicas", clinica_id)
         if not isinstance(clinica, Clinica):
-            raise ValueError(f"Clínica com ID {clinica_id} não encontrada.")
+            raise ErroCadastroInvalido(f"Clínica com ID {clinica_id} não encontrada.")
+
+        if not isinstance(paciente_cpf, str) or not paciente_cpf:
+            raise ErroCadastroInvalido("O CPF do paciente deve ser informado.")
+        paciente = self.__repositorio_sistema.buscar_por_id("pessoas", paciente_cpf)
+        if not isinstance(paciente, Paciente):
+            raise ErroCadastroInvalido(
+                f"Paciente com CPF {paciente_cpf} não encontrado."
+            )
+
+        if type(tipo_atendimento_id) is not int:
+            raise ErroCadastroInvalido(
+                "O ID do tipo de atendimento deve ser um número inteiro."
+            )
+        tipo_atendimento = self.__repositorio_sistema.buscar_por_id(
+            "tipos_atendimento",
+            tipo_atendimento_id,
+        )
+        if not isinstance(tipo_atendimento, TipoAtendimento):
+            raise ErroCadastroInvalido(
+                f"Tipo de atendimento com ID {tipo_atendimento_id} não encontrado."
+            )
+
+        responsavel_legal = None
+        if responsavel_legal_cpf:
+            if not isinstance(responsavel_legal_cpf, str):
+                raise ErroCadastroInvalido(
+                    "O CPF do responsável legal deve ser texto."
+                )
+            responsavel_legal = self.__repositorio_sistema.buscar_por_id(
+                "pessoas",
+                responsavel_legal_cpf,
+            )
+            if not isinstance(responsavel_legal, ResponsavelLegal):
+                raise ErroCadastroInvalido(
+                    f"Responsável legal com CPF {responsavel_legal_cpf} não encontrado."
+                )
 
         ids_utilizados = {
             atendimento.id
@@ -34,9 +79,20 @@ class ServicoAgendamento:
         while id_agendamento in ids_utilizados:
             id_agendamento += 1
         if id_agendamento > 999_999:
-            raise ValueError("Não há mais IDs de seis dígitos disponíveis para agendamentos.")
+            raise ErroConflitoAgendamento(
+                "Não há mais IDs de seis dígitos disponíveis para agendamentos."
+            )
 
-        atendimento = Atendimento(id_agendamento, data, hora_inicio, hora_fim, valor)
+        atendimento = Atendimento(
+            id_agendamento,
+            data,
+            hora_inicio,
+            hora_fim,
+            valor,
+            paciente,
+            tipo_atendimento,
+            responsavel_legal,
+        )
         atendimento.clinica = clinica
         self.validar_agendamento(atendimento)
         clinica.vincular_atendimento(atendimento)
@@ -49,7 +105,9 @@ class ServicoAgendamento:
             atendimento.id,
         )
         if not isinstance(atendimento_existente, Atendimento):
-            raise ValueError(f"Atendimento com ID {atendimento.id} não encontrado.")
+            raise ErroCadastroInvalido(
+                f"Atendimento com ID {atendimento.id} não encontrado."
+            )
 
         atendimento.clinica = atendimento_existente.clinica
         self.validar_agendamento(
@@ -60,12 +118,15 @@ class ServicoAgendamento:
         atendimento_existente.data = atendimento.data
         atendimento_existente.hora_inicio = atendimento.hora_inicio
         atendimento_existente.hora_fim = atendimento.hora_fim
+        atendimento_existente.paciente = atendimento.paciente
+        atendimento_existente.tipo_atendimento = atendimento.tipo_atendimento
+        atendimento_existente.responsavel_legal = atendimento.responsavel_legal
         atendimento_existente.profissional = atendimento.profissional
 
     def cancelar(self, id: int) -> None:
         atendimento = self.__repositorio_sistema.buscar_por_id("atendimentos", id)
         if not isinstance(atendimento, Atendimento):
-            raise ValueError(f"Atendimento com ID {id} não encontrado.")
+            raise ErroCadastroInvalido(f"Atendimento com ID {id} não encontrado.")
 
         self.__repositorio_sistema.excluir(atendimento)
         if atendimento.clinica is not None:
@@ -88,7 +149,10 @@ class ServicoAgendamento:
         if ids_duplicados:
             raise ErroConflitoAgendamento(f"ID duplicado: {atendimento.id}.")
 
-        if not isinstance(atendimento.data, date):
+        if not isinstance(atendimento.data, date) or isinstance(
+            atendimento.data,
+            datetime,
+        ):
             raise ErroHorarioInvalido("A data do atendimento é inválida.")
         if not isinstance(atendimento.hora_inicio, time) or not isinstance(
             atendimento.hora_fim,
@@ -102,10 +166,52 @@ class ServicoAgendamento:
             or not isfinite(atendimento.valor_inicial)
             or atendimento.valor_inicial <= 0
         ):
-            raise ValueError("O valor do atendimento deve ser maior que zero.")
+            raise ErroCadastroInvalido(
+                "O valor do atendimento deve ser maior que zero."
+            )
+
+        if not isinstance(atendimento.paciente, Paciente):
+            raise ErroCadastroInvalido(
+                "O atendimento deve estar associado a um paciente."
+            )
+        if not isinstance(atendimento.tipo_atendimento, TipoAtendimento):
+            raise ErroCadastroInvalido(
+                "O atendimento deve estar associado a um tipo de atendimento."
+            )
+        if atendimento.paciente.idade_na_data(atendimento.data) < 0:
+            raise ErroHorarioInvalido(
+                "A data do atendimento não pode ser anterior ao nascimento."
+            )
+        if (
+            not atendimento.paciente.pode_atender_sozinho(atendimento.data)
+            and not isinstance(atendimento.responsavel_legal, ResponsavelLegal)
+        ):
+            raise ErroAtendimentoIndependente()
+        if (
+            atendimento.responsavel_legal is not None
+            and not isinstance(atendimento.responsavel_legal, ResponsavelLegal)
+        ):
+            raise ErroCadastroInvalido(
+                "O responsável informado deve ser um responsável legal."
+            )
+        pagamentos_vinculados = (
+            pagamento
+            for pagamento in self.__repositorio_sistema.listar("pagamentos")
+            if isinstance(pagamento, Pagamento)
+            and pagamento.atendimento_id == atendimento.id
+        )
+        if any(
+            pagamento.data_pagamento > atendimento.data
+            for pagamento in pagamentos_vinculados
+        ):
+            raise ErroHorarioInvalido(
+                "A data do atendimento não pode ser anterior à data de um pagamento."
+            )
 
         if not isinstance(atendimento.clinica, Clinica):
-            raise ValueError("O atendimento deve estar associado a uma clínica.")
+            raise ErroCadastroInvalido(
+                "O atendimento deve estar associado a uma clínica."
+            )
         if not atendimento.clinica.dentro_do_expediente(
             atendimento.data,
             atendimento.hora_inicio,
@@ -130,10 +236,13 @@ class ServicoAgendamento:
             return False
 
         atendimentos = self.__repositorio_sistema.listar("atendimentos")
-        pessoas = self.__repositorio_sistema.listar("pessoas")
 
-        for pessoa in pessoas:
-            if not isinstance(pessoa, Profissional) or pessoa.tipo_pessoa() != "Profissional":
+        if not isinstance(atendimento.clinica, Clinica):
+            atendimento.profissional = None
+            return False
+
+        for pessoa in atendimento.clinica.profissionais:
+            if not isinstance(pessoa, Profissional):
                 continue
 
             conflito = any(

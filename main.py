@@ -101,6 +101,7 @@ def __executar_menu_cadastros(
             controladores[tipo],
             visao_atendimentos=visao_atendimentos,
             controlador_atendimentos=controlador_atendimentos,
+            controlador_clinicas=controladores["clinica"],
         )
 
 
@@ -112,6 +113,7 @@ def __executar_menu_crud(
     controlador: object,
     visao_atendimentos: VisaoAtendimentos | None = None,
     controlador_atendimentos: ControladorAtendimentos | None = None,
+    controlador_clinicas: ControladorClinicas | None = None,
 ) -> None:
     while True:
         opcao = visao_principal.menu_operacoes(descricao)
@@ -123,9 +125,17 @@ def __executar_menu_crud(
                 if visao_atendimentos is None or controlador_atendimentos is None:
                     raise ValueError("Não foi possível iniciar o cadastro do procedimento.")
                 visao_cadastros.exibir_listagem(controlador_atendimentos.listar())
+                visao_cadastros.exibir_listagem(controlador.listar_profissionais())
                 atendimento_id = visao_principal.solicitar_id("atendimento")
                 dados = visao_cadastros.solicitar_dados(tipo=tipo)
                 controlador.incluir(atendimento_id, dados)
+            elif tipo == "profissional":
+                if controlador_clinicas is None:
+                    raise ValueError(
+                        "Não foi possível listar as clínicas disponíveis."
+                    )
+                visao_cadastros.exibir_listagem(controlador_clinicas.listar())
+                controlador.incluir(visao_cadastros.solicitar_dados(tipo=tipo))
             elif tipo in ("atendimento", "pagamento"):
                 controlador.incluir()
             else:
@@ -134,13 +144,11 @@ def __executar_menu_crud(
         elif opcao == 2:
             identificador = visao_principal.solicitar_id(tipo)
             if tipo == "atendimento":
-                controlador.alterar(
-                    identificador,
-                    visao_atendimentos.solicitar_dados_alteracao(),
-                )
+                controlador.alterar(identificador)
             elif tipo == "pagamento":
                 controlador.alterar(identificador)
             elif tipo == "procedimento":
+                visao_cadastros.exibir_listagem(controlador.listar_profissionais())
                 dados = visao_atendimentos.solicitar_procedimento(
                     id_procedimento=identificador
                 )

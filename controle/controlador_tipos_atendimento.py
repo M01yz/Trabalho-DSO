@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from exceptions.erro_cadastro_duplicado import ErroCadastroDuplicado
+from exceptions.erro_cadastro_invalido import ErroCadastroInvalido
+
 from entidades.repositorio_sistema import RepositorioSistema
 from entidades.tipo_atendimento import TipoAtendimento
 from limite.visao_cadastros import VisaoCadastros
@@ -20,17 +23,27 @@ class ControladorTiposAtendimento:
             if dados is not None
             else self.__visao.solicitar_dados(tipo="tipo_atendimento")
         )
+        if not isinstance(dados_tipo, dict):
+            raise ErroCadastroInvalido(
+                "Os dados do tipo de atendimento são inválidos."
+            )
         if dados_tipo.get("tipo") != "tipo_atendimento":
-            raise ValueError("Este controlador só pode incluir tipos de atendimento.")
+            raise ErroCadastroInvalido(
+                "Este controlador só pode incluir tipos de atendimento."
+            )
 
         tipo_id = dados_tipo["id"]
         if type(tipo_id) is not int:
-            raise ValueError("O ID do tipo de atendimento deve ser um número inteiro.")
+            raise ErroCadastroInvalido(
+                "O ID do tipo de atendimento deve ser um número inteiro."
+            )
         if self.__repositorio_sistema.buscar_por_id(
             "tipos_atendimento",
             tipo_id,
         ) is not None:
-            raise ValueError(f"Tipo de atendimento com ID {tipo_id} já existe.")
+            raise ErroCadastroDuplicado(
+                f"Tipo de atendimento com ID {tipo_id} já existe."
+            )
 
         tipo_atendimento = TipoAtendimento(
             id=tipo_id,

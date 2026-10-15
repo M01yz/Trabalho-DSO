@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from math import isfinite
 
 from exceptions.erro_cadastro_duplicado import ErroCadastroDuplicado
@@ -17,6 +17,8 @@ class ServicoPagamentos:
         self.__repositorio_sistema = repositorio_sistema
 
     def registrar(self, dados: dict) -> Pagamento:
+        if not isinstance(dados, dict):
+            raise ErroPagamentoInvalido("Os dados do pagamento são inválidos.")
         try:
             modalidade = dados["modalidade"]
             atendimento_id = dados["atendimento_id"]
@@ -35,7 +37,10 @@ class ServicoPagamentos:
             raise ErroPagamentoInvalido("O ID do pagamento deve ser um número inteiro.")
         if type(atendimento_id) is not int:
             raise ErroPagamentoInvalido("O ID do atendimento deve ser um número inteiro.")
-        if not isinstance(data_pagamento, date):
+        if not isinstance(data_pagamento, date) or isinstance(
+            data_pagamento,
+            datetime,
+        ):
             raise ErroPagamentoInvalido("A data do pagamento é inválida.")
         if not isinstance(valor_pago, (int, float)) or not isfinite(valor_pago) or valor_pago <= 0:
             raise ErroPagamentoInvalido("O valor do pagamento deve ser maior que zero.")
@@ -43,6 +48,10 @@ class ServicoPagamentos:
         atendimento = self.__repositorio_sistema.buscar_por_id("atendimentos", atendimento_id)
         if not isinstance(atendimento, Atendimento):
             raise ErroPagamentoInvalido(f"Atendimento com ID {atendimento_id} não encontrado.")
+        if data_pagamento > atendimento.data:
+            raise ErroPagamentoInvalido(
+                "A data do pagamento não pode ser posterior à data do atendimento."
+            )
 
         if self.__repositorio_sistema.buscar_por_id("pagamentos", id_pagamento) is not None:
             raise ErroCadastroDuplicado(f"Já existe um pagamento com o ID {id_pagamento}.")
@@ -97,6 +106,8 @@ class ServicoPagamentos:
         return pagamento
 
     def alterar(self, id: int, dados: dict) -> None:
+        if not isinstance(dados, dict):
+            raise ErroPagamentoInvalido("Os dados do pagamento são inválidos.")
         pagamento_existente = self.__repositorio_sistema.buscar_por_id(
             "pagamentos",
             id,
@@ -149,7 +160,10 @@ class ServicoPagamentos:
             raise ErroPagamentoInvalido("O pagamento deve ter entre 1 e 3 parcelas.")
         if type(atendimento_id) is not int:
             raise ErroPagamentoInvalido("O ID do atendimento deve ser um número inteiro.")
-        if not isinstance(data_pagamento, date):
+        if not isinstance(data_pagamento, date) or isinstance(
+            data_pagamento,
+            datetime,
+        ):
             raise ErroPagamentoInvalido("A data do pagamento é inválida.")
         if not isinstance(valor_pago, (int, float)) or not isfinite(valor_pago) or valor_pago <= 0:
             raise ErroPagamentoInvalido("O valor do pagamento deve ser maior que zero.")
@@ -201,6 +215,10 @@ class ServicoPagamentos:
         )
         if not isinstance(atendimento_novo, Atendimento):
             raise ErroPagamentoInvalido(f"Atendimento com ID {atendimento_id} não encontrado.")
+        if data_pagamento > atendimento_novo.data:
+            raise ErroPagamentoInvalido(
+                "A data do pagamento não pode ser posterior à data do atendimento."
+            )
 
         self.validar_pagamento(pagamento)
 

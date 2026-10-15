@@ -38,7 +38,7 @@ class ServicoRelatorios:
 
     def procedimentos_mais_realizados(self) -> list:
         quantidades = Counter(
-            procedimento.tipo_atendimento.nome
+            procedimento.descricao
             for atendimento in self.__repositorio_sistema.listar("atendimentos")
             for procedimento in atendimento.procedimentos
         )

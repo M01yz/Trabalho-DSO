@@ -94,12 +94,18 @@ class VisaoCadastros:
             dados["celular"] = solicitar_texto("Celular: ")
             dados["especialidade"] = solicitar_texto("Especialidade: ")
             dados["registro_profissional"] = solicitar_texto("Registro profissional: ")
+            dados["clinica_id"] = solicitar_inteiro(
+                "ID da clínica de atuação: "
+            )
         elif tipo == "responsavel_legal":
             dados["nome"] = solicitar_texto("Nome: ")
             dados["cpf"] = solicitar_texto("CPF: ")
             dados["celular"] = solicitar_texto("Celular: ")
         elif tipo == "procedimento":
             dados["tipo_atendimento_id"] = solicitar_inteiro("ID do tipo de atendimento: ")
+            dados["profissional_responsavel_cpf"] = solicitar_texto(
+                "CPF do profissional responsável: "
+            )
             dados["descricao"] = solicitar_texto("Descrição: ")
             dados["custo"] = float(solicitar_decimal("Custo: "))
 
@@ -150,6 +156,9 @@ class VisaoCadastros:
             return {
                 "tipo_atendimento_id": solicitar_inteiro(
                     "ID do tipo de atendimento: "
+                ),
+                "profissional_responsavel_cpf": solicitar_texto(
+                    "CPF do profissional responsável: "
                 ),
                 "descricao": solicitar_texto("Descrição: "),
                 "custo": float(solicitar_decimal("Custo: ")),

@@ -14,6 +14,11 @@ def solicitar_texto(mensagem: str) -> str:
         print("O valor não pode ficar vazio.")
 
 
+def solicitar_texto_opcional(mensagem: str) -> str | None:
+    valor = input(mensagem).strip()
+    return valor or None
+
+
 def solicitar_valor(mensagem: str, conversor: Callable[[str], T], formato: str) -> T:
     while True:
         valor = input(mensagem).strip()
@@ -64,6 +69,9 @@ def exibir_tabela(itens: list) -> None:
         "descricao",
         "custo",
         "tipo_atendimento_id",
+        "tipo_atendimento_nome",
+        "paciente_cpf",
+        "responsavel_legal_cpf",
         "data",
         "hora_inicio",
         "hora_fim",
@@ -75,6 +83,9 @@ def exibir_tabela(itens: list) -> None:
         "cpf_pagador",
         "numero_cartao",
         "bandeira",
+        "profissional_responsavel_cpf",
+        "profissional_cpf",
+        "clinica_nome",
     )
     linhas = []
     colunas = []
