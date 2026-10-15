@@ -15,7 +15,11 @@ class ControladorClinicas:
         self.__visao = visao if visao is not None else VisaoCadastros()
 
     def incluir(self, dados: dict | None = None) -> Clinica:
-        dados_clinica = dados if dados is not None else self.__visao.solicitar_dados()
+        dados_clinica = (
+            dados
+            if dados is not None
+            else self.__visao.solicitar_dados(tipo="clinica")
+        )
         if dados_clinica.get("tipo") not in (None, "clinica"):
             raise ValueError("Este controlador só pode incluir cadastros de clínica.")
 
@@ -40,8 +44,8 @@ class ControladorClinicas:
         if "descricao" in dados:
             clinica.descricao = dados["descricao"]
 
-    def excluir(self) -> None:
-        clinica_id = self.__visao.solicitar_id_clinica()
+    def excluir(self, id: int | None = None) -> None:
+        clinica_id = id if id is not None else self.__visao.solicitar_id_clinica()
         clinica = self.__repositorio_sistema.buscar_por_id("clinicas", clinica_id)
         if not isinstance(clinica, Clinica):
             raise ValueError(f"Clínica com ID {clinica_id} não encontrada.")

@@ -130,6 +130,4 @@ class ControladorProcedimentos:
         self.__repositorio_sistema.excluir(procedimento)
 
     def listar(self) -> list:
-        procedimentos = self.__repositorio_sistema.listar("procedimentos")
-        self.__visao.exibir_procedimentos(procedimentos)
-        return procedimentos
+        return self.__repositorio_sistema.listar("procedimentos")

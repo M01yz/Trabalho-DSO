@@ -18,5 +18,9 @@ class Profissional(Pessoa):
     def registro_profissional(self):
         return self.__registro_profissional
 
+    @registro_profissional.setter
+    def registro_profissional(self, registro_profissional: str):
+        self.__registro_profissional = registro_profissional
+
     def tipo_pessoa(self) -> str:
         return "Profissional"

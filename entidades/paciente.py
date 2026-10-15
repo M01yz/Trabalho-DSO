@@ -11,6 +11,10 @@ class Paciente(Pessoa):
     def data_nascimento(self) -> date:
         return self.__data_nascimento
 
+    @data_nascimento.setter
+    def data_nascimento(self, data_nascimento: date) -> None:
+        self.__data_nascimento = data_nascimento
+
     def idade_na_data(self, data: date) -> int:
         data_paciente = self.__data_nascimento
         idade = data.year - data_paciente.year - ((data.month, data.day) < (data_paciente.month, data_paciente.day))

@@ -25,7 +25,11 @@ class VisaoCadastros:
             "celular": solicitar_texto("Celular: "),
         }
 
-    def solicitar_dados(self, somente_tipo: bool = False) -> dict:
+    def solicitar_dados(
+        self,
+        somente_tipo: bool = False,
+        tipo: str | None = None,
+    ) -> dict:
         tipos = {
             "1": "clinica",
             "2": "tipo_atendimento",
@@ -34,24 +38,29 @@ class VisaoCadastros:
             "5": "responsavel_legal",
             "6": "procedimento",
         }
-        if somente_tipo:
+        if tipo is not None:
+            if tipo not in tipos.values():
+                raise ValueError(f"Tipo de cadastro inválido: {tipo}.")
+        elif somente_tipo:
             tipos = {
                 opcao: tipo
                 for opcao, tipo in tipos.items()
                 if tipo in ("paciente", "profissional", "responsavel_legal")
             }
 
-        print("Tipo de cadastro:")
-        for opcao, tipo in tipos.items():
-            print(f"{opcao}. {tipo.replace('_', ' ').capitalize()}")
+        if tipo is None:
+            print("Tipo de cadastro:")
+            for opcao, nome_tipo in tipos.items():
+                print(f"{opcao}. {nome_tipo.replace('_', ' ').capitalize()}")
 
-        while True:
-            opcao = input("Selecione uma opção: ").strip()
-            if opcao in tipos:
-                break
-            print("Opção inválida. Selecione um dos tipos listados.")
+            while True:
+                opcao = input("Selecione uma opção: ").strip()
+                if opcao in tipos:
+                    break
+                print("Opção inválida. Selecione um dos tipos listados.")
 
-        tipo = tipos[opcao]
+            tipo = tipos[opcao]
+
         dados: dict = {"tipo": tipo}
         if somente_tipo:
             return dados
@@ -84,6 +93,56 @@ class VisaoCadastros:
             dados["custo"] = float(solicitar_decimal("Custo: "))
 
         return dados
+
+    def solicitar_id(self, tipo: str) -> int | str:
+        if tipo in ("paciente", "profissional", "responsavel_legal"):
+            return self.solicitar_cpf_pessoa()
+        if tipo in (
+            "clinica",
+            "tipo_atendimento",
+            "procedimento",
+            "atendimento",
+            "pagamento",
+        ):
+            return solicitar_inteiro(f"ID de {tipo.replace('_', ' ')}: ")
+        raise ValueError(f"Tipo de cadastro inválido: {tipo}.")
+
+    def solicitar_dados_alteracao(self, tipo: str) -> dict:
+        if tipo == "clinica":
+            return {
+                "nome": solicitar_texto("Nome: "),
+                "cidade": solicitar_texto("Cidade: "),
+                "descricao": solicitar_texto("Descrição: "),
+            }
+        if tipo == "tipo_atendimento":
+            return {
+                "nome": solicitar_texto("Nome: "),
+                "descricao": solicitar_texto("Descrição: "),
+            }
+        if tipo in ("paciente", "profissional", "responsavel_legal"):
+            dados = {
+                "nome": solicitar_texto("Nome: "),
+                "celular": solicitar_texto("Celular: "),
+            }
+            if tipo == "paciente":
+                dados["data_nascimento"] = solicitar_data(
+                    "Data de nascimento (DD/MM/AAAA): "
+                )
+            elif tipo == "profissional":
+                dados.update(
+                    especialidade=solicitar_texto("Especialidade: "),
+                    registro_profissional=solicitar_texto("Registro profissional: "),
+                )
+            return dados
+        if tipo == "procedimento":
+            return {
+                "tipo_atendimento_id": solicitar_inteiro(
+                    "ID do tipo de atendimento: "
+                ),
+                "descricao": solicitar_texto("Descrição: "),
+                "custo": float(solicitar_decimal("Custo: ")),
+            }
+        raise ValueError(f"Tipo de cadastro inválido: {tipo}.")
 
     def exibir_listagem(self, itens: list) -> None:
         exibir_tabela(itens)

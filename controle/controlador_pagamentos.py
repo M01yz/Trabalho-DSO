@@ -39,6 +39,4 @@ class ControladorPagamentos:
         self.__servico_pagamentos.excluir(id)
 
     def listar(self) -> list:
-        pagamentos = self.__servico_pagamentos.listar()
-        self.__visao.exibir_pagamentos(pagamentos)
-        return pagamentos
+        return self.__servico_pagamentos.listar()

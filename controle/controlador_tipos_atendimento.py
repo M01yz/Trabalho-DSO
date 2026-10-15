@@ -15,7 +15,11 @@ class ControladorTiposAtendimento:
         self.__visao = visao if visao is not None else VisaoCadastros()
 
     def incluir(self, dados: dict | None = None) -> TipoAtendimento:
-        dados_tipo = dados if dados is not None else self.__visao.solicitar_dados()
+        dados_tipo = (
+            dados
+            if dados is not None
+            else self.__visao.solicitar_dados(tipo="tipo_atendimento")
+        )
         if dados_tipo.get("tipo") != "tipo_atendimento":
             raise ValueError("Este controlador só pode incluir tipos de atendimento.")
 
@@ -36,7 +40,7 @@ class ControladorTiposAtendimento:
         self.__repositorio_sistema.salvar(tipo_atendimento)
         return tipo_atendimento
 
-    def alterar(self, id: int, dados: dict) -> None:
+    def alterar(self, id: int, dados: dict | None = None) -> None:
         tipo_atendimento = self.__repositorio_sistema.buscar_por_id(
             "tipos_atendimento",
             id,
@@ -44,6 +48,11 @@ class ControladorTiposAtendimento:
         if not isinstance(tipo_atendimento, TipoAtendimento):
             raise ValueError(f"Tipo de atendimento com ID {id} não encontrado.")
 
+        dados = (
+            dados
+            if dados is not None
+            else self.__visao.solicitar_dados_alteracao("tipo_atendimento")
+        )
         if "nome" in dados:
             tipo_atendimento.nome = dados["nome"]
         if "descricao" in dados:
@@ -59,6 +68,4 @@ class ControladorTiposAtendimento:
         self.__repositorio_sistema.excluir(tipo_atendimento)
 
     def listar(self) -> list:
-        tipos_atendimento = self.__repositorio_sistema.listar("tipos_atendimento")
-        self.__visao.exibir_listagem(tipos_atendimento)
-        return tipos_atendimento
+        return self.__repositorio_sistema.listar("tipos_atendimento")

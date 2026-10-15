@@ -74,11 +74,28 @@ class ControladorPessoas:
         dados_atualizados = (
             dados
             if dados is not None
-            else self.__visao.solicitar_dados_pessoa()
+            else self.__visao.solicitar_dados_alteracao(
+                "paciente"
+                if isinstance(pessoa, Paciente)
+                else "profissional"
+                if isinstance(pessoa, Profissional)
+                else "responsavel_legal"
+            )
         )
 
         pessoa.nome = dados_atualizados.get("nome", pessoa.nome)
         pessoa.celular = dados_atualizados.get("celular", pessoa.celular)
+        if isinstance(pessoa, Paciente) and "data_nascimento" in dados_atualizados:
+            pessoa.data_nascimento = dados_atualizados["data_nascimento"]
+        if isinstance(pessoa, Profissional):
+            pessoa.especialidade = dados_atualizados.get(
+                "especialidade",
+                pessoa.especialidade,
+            )
+            pessoa.registro_profissional = dados_atualizados.get(
+                "registro_profissional",
+                pessoa.registro_profissional,
+            )
 
     def excluir(self, cpf: str | None = None) -> None:
         cpf_pessoa = cpf if cpf is not None else self.__visao.solicitar_cpf_pessoa()
@@ -109,5 +126,4 @@ class ControladorPessoas:
             for pessoa in self.__repositorio_sistema.listar("pessoas")
             if isinstance(pessoa, classe_pessoa)
         ]
-        self.__visao.exibir_listagem(pessoas)
         return pessoas

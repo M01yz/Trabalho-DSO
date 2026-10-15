@@ -24,6 +24,14 @@ class VisaoAtendimentos:
             "valor": float(solicitar_decimal("Valor: ")),
         }
 
+    def solicitar_dados_alteracao(self) -> dict:
+        return {
+            "data": solicitar_data("Data (DD/MM/AAAA): "),
+            "hora_inicio": solicitar_hora("Horário de início (HH:MM): "),
+            "hora_fim": solicitar_hora("Horário de término (HH:MM): "),
+            "valor": float(solicitar_decimal("Valor: ")),
+        }
+
     def solicitar_id_atendimento(self) -> int:
         return solicitar_inteiro("ID do atendimento: ")
 
