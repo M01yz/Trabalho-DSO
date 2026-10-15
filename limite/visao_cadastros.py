@@ -13,7 +13,19 @@ class VisaoCadastros:
             "6. Procedimento"
         )
 
-    def solicitar_dados(self) -> dict:
+    def solicitar_id_clinica(self) -> int:
+        return solicitar_inteiro("ID da clínica: ")
+
+    def solicitar_cpf_pessoa(self) -> str:
+        return solicitar_texto("CPF da pessoa: ")
+
+    def solicitar_dados_pessoa(self) -> dict:
+        return {
+            "nome": solicitar_texto("Nome: "),
+            "celular": solicitar_texto("Celular: "),
+        }
+
+    def solicitar_dados(self, somente_tipo: bool = False) -> dict:
         tipos = {
             "1": "clinica",
             "2": "tipo_atendimento",
@@ -22,6 +34,13 @@ class VisaoCadastros:
             "5": "responsavel_legal",
             "6": "procedimento",
         }
+        if somente_tipo:
+            tipos = {
+                opcao: tipo
+                for opcao, tipo in tipos.items()
+                if tipo in ("paciente", "profissional", "responsavel_legal")
+            }
+
         print("Tipo de cadastro:")
         for opcao, tipo in tipos.items():
             print(f"{opcao}. {tipo.replace('_', ' ').capitalize()}")
@@ -34,6 +53,8 @@ class VisaoCadastros:
 
         tipo = tipos[opcao]
         dados: dict = {"tipo": tipo}
+        if somente_tipo:
+            return dados
 
         if tipo in ("clinica", "tipo_atendimento", "procedimento"):
             dados["id"] = solicitar_inteiro("ID: ")

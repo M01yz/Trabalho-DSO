@@ -4,7 +4,7 @@ from ._entrada import exibir_tabela, solicitar_data, solicitar_decimal, solicita
 
 
 class VisaoPagamentos:
-    def solicitar_pagamento(self) -> dict:
+    def solicitar_pagamento(self, id_pagamento: int | None = None) -> dict:
         modalidades = {
             "1": "dinheiro",
             "2": "pix",
@@ -24,7 +24,11 @@ class VisaoPagamentos:
         dados = {
             "modalidade": modalidade,
             "atendimento_id": solicitar_inteiro("ID do atendimento: "),
-            "id": solicitar_inteiro("ID do pagamento: "),
+            "id": (
+                id_pagamento
+                if id_pagamento is not None
+                else solicitar_inteiro("ID do pagamento: ")
+            ),
             "data_pagamento": solicitar_data("Data do pagamento (DD/MM/AAAA): "),
             "valor_pago": float(solicitar_decimal("Valor pago: ")),
         }

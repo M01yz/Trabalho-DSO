@@ -61,7 +61,9 @@ class ServicoAgendamento:
         if not isinstance(atendimento, Atendimento):
             raise ValueError(f"Atendimento com ID {id} não encontrado.")
 
-        self.__repositorio_sistema.remover(atendimento)
+        self.__repositorio_sistema.excluir(atendimento)
+        if atendimento.clinica is not None:
+            atendimento.clinica.desvincular_atendimento(atendimento)
 
     def validar_agendamento(self, atendimento: Atendimento) -> None:
         if type(atendimento.id) is not int or not 100_000 <= atendimento.id <= 999_999:

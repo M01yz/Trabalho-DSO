@@ -2,13 +2,18 @@ from ._entrada import exibir_tabela, solicitar_data, solicitar_decimal, solicita
 
 
 class VisaoAtendimentos:
-    def menu_atendimentos(self) -> None:
+    def menu_atendimentos(self) -> int:
         print(
             "\n=== Atendimentos ===\n"
-            "1. Agendar atendimento\n"
-            "2. Incluir procedimento\n"
+            "1. Agendar/modificar atendimento\n"
+            "2. Incluir/modificar procedimento\n"
             "3. Listar atendimentos"
         )
+        while True:
+            opcao = solicitar_inteiro("Escolha uma opção: ")
+            if 1 <= opcao <= 3:
+                return opcao
+            print("Opção inválida. Escolha uma opção de 1 a 3.")
 
     def solicitar_agendamento(self) -> dict:
         return {
@@ -18,6 +23,9 @@ class VisaoAtendimentos:
             "hora_fim": solicitar_hora("Horário de término (HH:MM): "),
             "valor": float(solicitar_decimal("Valor: ")),
         }
+
+    def solicitar_id_atendimento(self) -> int:
+        return solicitar_inteiro("ID do atendimento: ")
 
     def solicitar_procedimento(self) -> dict:
         return {

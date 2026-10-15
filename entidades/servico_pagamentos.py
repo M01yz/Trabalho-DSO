@@ -2,7 +2,6 @@ from math import isfinite
 
 from exceptions.erro_cadastro_duplicado import ErroCadastroDuplicado
 from exceptions.erro_pagamento_invalido import ErroPagamentoInvalido
-from limite.visao_pagamentos import VisaoPagamentos
 
 from .atendimento import Atendimento
 from .pagamento import Pagamento
@@ -13,16 +12,10 @@ from .repositorio_sistema import RepositorioSistema
 
 
 class ServicoPagamentos:
-    def __init__(
-        self,
-        repositorio_sistema: RepositorioSistema,
-        visao_pagamentos: VisaoPagamentos,
-    ):
+    def __init__(self, repositorio_sistema: RepositorioSistema):
         self.__repositorio_sistema = repositorio_sistema
-        self.__visao_pagamentos = visao_pagamentos
 
-    def registrar(self) -> Pagamento:
-        dados = self.__visao_pagamentos.solicitar_pagamento()
+    def registrar(self, dados: dict) -> Pagamento:
         try:
             modalidade = dados["modalidade"]
             atendimento_id = dados["atendimento_id"]
@@ -100,19 +93,103 @@ class ServicoPagamentos:
         self.__repositorio_sistema.salvar(pagamento)
         return pagamento
 
-    def alterar(self, pagamento: Pagamento) -> None:
+    def alterar(self, id: int, dados: dict) -> None:
         pagamento_existente = self.__repositorio_sistema.buscar_por_id(
             "pagamentos",
-            pagamento.id,
+            id,
         )
         if not isinstance(pagamento_existente, Pagamento):
-            raise ErroPagamentoInvalido(f"Pagamento com ID {pagamento.id} não encontrado.")
+            raise ErroPagamentoInvalido(f"Pagamento com ID {id} não encontrado.")
 
-        atendimento_id = pagamento.atendimento_id
-        if atendimento_id is None:
-            atendimento_id = pagamento_existente.atendimento_id
+        modalidade_existente = (
+            "dinheiro"
+            if isinstance(pagamento_existente, PagamentoDinheiro)
+            else "pix"
+            if isinstance(pagamento_existente, PagamentoPix)
+            else "cartao"
+            if isinstance(pagamento_existente, PagamentoCartao)
+            else None
+        )
+        if modalidade_existente is None:
+            raise ErroPagamentoInvalido(
+                f"Modalidade não suportada para o pagamento de ID {id}."
+            )
+
+        dados_atualizados = {
+            "modalidade": modalidade_existente,
+            "atendimento_id": pagamento_existente.atendimento_id,
+            "id": id,
+            "data_pagamento": pagamento_existente.data_pagamento,
+            "valor_pago": pagamento_existente.valor_pago,
+            "parcelas": pagamento_existente.parcelas,
+        }
+        if isinstance(pagamento_existente, PagamentoPix):
+            dados_atualizados["cpf_pagador"] = pagamento_existente.cpf_pagador
+        elif isinstance(pagamento_existente, PagamentoCartao):
+            dados_atualizados["numero_cartao"] = pagamento_existente.numero_cartao
+            dados_atualizados["bandeira"] = pagamento_existente.bandeira
+        dados_atualizados.update(dados)
+        dados_atualizados["id"] = id
+
+        try:
+            modalidade = dados_atualizados["modalidade"]
+            atendimento_id = dados_atualizados["atendimento_id"]
+            data_pagamento = dados_atualizados["data_pagamento"]
+            valor_pago = dados_atualizados["valor_pago"]
+            parcelas = dados_atualizados["parcelas"]
+        except KeyError as erro:
+            raise ErroPagamentoInvalido(
+                f"Falta informar o campo obrigatório {erro.args[0]}."
+            ) from erro
+
+        if type(parcelas) is not int or not 1 <= parcelas <= 3:
+            raise ErroPagamentoInvalido("O pagamento deve ter entre 1 e 3 parcelas.")
         if type(atendimento_id) is not int:
             raise ErroPagamentoInvalido("O ID do atendimento deve ser um número inteiro.")
+        if not isinstance(valor_pago, (int, float)) or not isfinite(valor_pago) or valor_pago <= 0:
+            raise ErroPagamentoInvalido("O valor do pagamento deve ser maior que zero.")
+
+        if modalidade == "dinheiro":
+            pagamento = PagamentoDinheiro(
+                id,
+                data_pagamento,
+                valor_pago,
+                parcelas,
+                atendimento_id,
+            )
+        elif modalidade == "pix":
+            try:
+                cpf_pagador = dados_atualizados["cpf_pagador"]
+            except KeyError as erro:
+                raise ErroPagamentoInvalido("Falta informar o CPF do pagador.") from erro
+            pagamento = PagamentoPix(
+                id,
+                data_pagamento,
+                valor_pago,
+                cpf_pagador,
+                parcelas,
+                atendimento_id,
+            )
+        elif modalidade == "cartao":
+            try:
+                numero_cartao = dados_atualizados["numero_cartao"]
+                bandeira = dados_atualizados["bandeira"]
+            except KeyError as erro:
+                raise ErroPagamentoInvalido(
+                    f"Falta informar o campo obrigatório {erro.args[0]}."
+                ) from erro
+            pagamento = PagamentoCartao(
+                id,
+                data_pagamento,
+                valor_pago,
+                numero_cartao,
+                bandeira,
+                parcelas,
+                atendimento_id,
+            )
+        else:
+            raise ErroPagamentoInvalido(f"Modalidade de pagamento inválida: {modalidade}.")
+
         atendimento_novo = self.__repositorio_sistema.buscar_por_id(
             "atendimentos",
             atendimento_id,
@@ -120,8 +197,6 @@ class ServicoPagamentos:
         if not isinstance(atendimento_novo, Atendimento):
             raise ErroPagamentoInvalido(f"Atendimento com ID {atendimento_id} não encontrado.")
 
-        pagamento.id = pagamento_existente.id
-        pagamento.atendimento_id = atendimento_id
         self.validar_pagamento(pagamento)
 
         atendimento_atual = None
