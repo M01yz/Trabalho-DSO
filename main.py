@@ -1,3 +1,5 @@
+from collections.abc import Callable
+
 from controle.controlador_atendimentos import ControladorAtendimentos
 from controle.controlador_clinicas import ControladorClinicas
 from controle.controlador_pagamentos import ControladorPagamentos
@@ -39,37 +41,35 @@ def executar() -> None:
             visao_principal.exibir_mensagem("Até logo.")
             return
 
-        try:
-            if opcao == 1:
-                __executar_menu_cadastros(
-                    visao_principal,
-                    visao_cadastros,
-                    visao_atendimentos,
-                    controladores_cadastros,
-                    controlador_atendimentos,
-                )
-            elif opcao == 2:
-                __executar_menu_crud(
-                    visao_principal,
-                    visao_cadastros,
-                    "atendimento",
-                    "Atendimentos",
-                    controlador_atendimentos,
-                    visao_atendimentos=visao_atendimentos,
-                    controlador_atendimentos=controlador_atendimentos,
-                )
-            elif opcao == 3:
-                __executar_menu_crud(
-                    visao_principal,
-                    visao_cadastros,
-                    "pagamento",
-                    "Pagamentos",
-                    controlador_pagamentos,
-                )
-            elif opcao == 4:
-                controlador_relatorios.listar()
-        except (ErroRegraNegocio, ValueError) as erro:
-            visao_principal.exibir_mensagem(f"Não foi possível concluir a operação: {erro}")
+        if opcao == 1:
+            acao = lambda: __executar_menu_cadastros(
+                visao_principal,
+                visao_cadastros,
+                visao_atendimentos,
+                controladores_cadastros,
+                controlador_atendimentos,
+            )
+        elif opcao == 2:
+            acao = lambda: __executar_menu_crud(
+                visao_principal,
+                visao_cadastros,
+                "atendimento",
+                "Atendimentos",
+                controlador_atendimentos,
+                visao_atendimentos=visao_atendimentos,
+                controlador_atendimentos=controlador_atendimentos,
+            )
+        elif opcao == 3:
+            acao = lambda: __executar_menu_crud(
+                visao_principal,
+                visao_cadastros,
+                "pagamento",
+                "Pagamentos",
+                controlador_pagamentos,
+            )
+        else:
+            acao = controlador_relatorios.listar
+        executar_com_tratamento_de_erros(acao, visao_principal)
 
 
 def __executar_menu_cadastros(
@@ -174,6 +174,20 @@ def __executar_menu_crud(
                 else controlador.listar()
             )
             visao_cadastros.exibir_listagem(itens)
+
+
+def executar_com_tratamento_de_erros(
+    acao: Callable[[], object],
+    visao: VisaoPrincipal,
+) -> bool:
+    try:
+        acao()
+    except (ErroRegraNegocio, ValueError) as erro:
+        visao.exibir_mensagem(
+            f"Não foi possível concluir a operação: {erro}"
+        )
+        return False
+    return True
 
 
 if __name__ == "__main__":

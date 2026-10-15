@@ -1,3 +1,4 @@
+from datetime import date
 from math import isfinite
 
 from exceptions.erro_cadastro_duplicado import ErroCadastroDuplicado
@@ -34,6 +35,8 @@ class ServicoPagamentos:
             raise ErroPagamentoInvalido("O ID do pagamento deve ser um número inteiro.")
         if type(atendimento_id) is not int:
             raise ErroPagamentoInvalido("O ID do atendimento deve ser um número inteiro.")
+        if not isinstance(data_pagamento, date):
+            raise ErroPagamentoInvalido("A data do pagamento é inválida.")
         if not isinstance(valor_pago, (int, float)) or not isfinite(valor_pago) or valor_pago <= 0:
             raise ErroPagamentoInvalido("O valor do pagamento deve ser maior que zero.")
 
@@ -146,6 +149,8 @@ class ServicoPagamentos:
             raise ErroPagamentoInvalido("O pagamento deve ter entre 1 e 3 parcelas.")
         if type(atendimento_id) is not int:
             raise ErroPagamentoInvalido("O ID do atendimento deve ser um número inteiro.")
+        if not isinstance(data_pagamento, date):
+            raise ErroPagamentoInvalido("A data do pagamento é inválida.")
         if not isinstance(valor_pago, (int, float)) or not isfinite(valor_pago) or valor_pago <= 0:
             raise ErroPagamentoInvalido("O valor do pagamento deve ser maior que zero.")
 

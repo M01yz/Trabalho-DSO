@@ -15,4 +15,4 @@ class PagamentoDinheiro(Pagamento):
         super().__init__(id, data_pagamento, valor_pago, parcelas, atendimento_id)
 
     def validar_modalidade(self) -> None:
-        pass
+        return None

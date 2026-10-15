@@ -1,6 +1,9 @@
 from datetime import date
 
+from exceptions.erro_pagamento_invalido import ErroPagamentoInvalido
+
 from .pagamento import Pagamento
+
 
 class PagamentoCartao(Pagamento):
     def __init__(
@@ -34,4 +37,10 @@ class PagamentoCartao(Pagamento):
         self.__bandeira = bandeira
 
     def validar_modalidade(self) -> None:
-        pass
+        if (
+            not isinstance(self.__numero_cartao, str)
+            or not self.__numero_cartao.strip()
+        ):
+            raise ErroPagamentoInvalido("O número do cartão não pode ficar vazio.")
+        if not isinstance(self.__bandeira, str) or not self.__bandeira.strip():
+            raise ErroPagamentoInvalido("A bandeira do cartão não pode ficar vazia.")

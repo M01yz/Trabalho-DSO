@@ -1,5 +1,7 @@
 from datetime import date
 
+from exceptions.erro_pagamento_invalido import ErroPagamentoInvalido
+
 from .pagamento import Pagamento
 
 
@@ -25,4 +27,11 @@ class PagamentoPix(Pagamento):
         self.__cpf_pagador = cpf_pagador
 
     def validar_modalidade(self) -> None:
-        pass
+        if (
+            not isinstance(self.__cpf_pagador, str)
+            or len(self.__cpf_pagador) != 11
+            or not self.__cpf_pagador.isdigit()
+        ):
+            raise ErroPagamentoInvalido(
+                "O CPF do pagador deve conter 11 dígitos numéricos."
+            )

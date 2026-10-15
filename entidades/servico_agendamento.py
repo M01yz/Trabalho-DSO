@@ -1,5 +1,8 @@
 from datetime import date, time
+from math import isfinite
 
+from exceptions.erro_conflito_agendamento import ErroConflitoAgendamento
+from exceptions.erro_horario_invalido import ErroHorarioInvalido
 from .atendimento import Atendimento
 from .clinica import Clinica
 from .profissional import Profissional
@@ -74,7 +77,7 @@ class ServicoAgendamento:
         ignorar_id: int | None = None,
     ) -> None:
         if type(atendimento.id) is not int or not 100_000 <= atendimento.id <= 999_999:
-            raise ValueError("ID inválido.")
+            raise ErroConflitoAgendamento("O ID do atendimento é inválido.")
 
         ids_duplicados = any(
             outro_atendimento is not atendimento
@@ -83,10 +86,23 @@ class ServicoAgendamento:
             for outro_atendimento in self.__repositorio_sistema.listar("atendimentos")
         )
         if ids_duplicados:
-            raise ValueError(f"ID duplicado: {atendimento.id}.")
+            raise ErroConflitoAgendamento(f"ID duplicado: {atendimento.id}.")
 
+        if not isinstance(atendimento.data, date):
+            raise ErroHorarioInvalido("A data do atendimento é inválida.")
+        if not isinstance(atendimento.hora_inicio, time) or not isinstance(
+            atendimento.hora_fim,
+            time,
+        ):
+            raise ErroHorarioInvalido("Os horários do atendimento são inválidos.")
         if atendimento.hora_inicio >= atendimento.hora_fim:
-            raise ValueError("Horário Inválido.")
+            raise ErroHorarioInvalido("O horário de início deve ser anterior ao término.")
+        if (
+            not isinstance(atendimento.valor_inicial, (int, float))
+            or not isfinite(atendimento.valor_inicial)
+            or atendimento.valor_inicial <= 0
+        ):
+            raise ValueError("O valor do atendimento deve ser maior que zero.")
 
         if not isinstance(atendimento.clinica, Clinica):
             raise ValueError("O atendimento deve estar associado a uma clínica.")
@@ -95,10 +111,14 @@ class ServicoAgendamento:
             atendimento.hora_inicio,
             atendimento.hora_fim,
         ):
-            raise ValueError("O horário solicitado está fora do expediente da clínica.")
+            raise ErroHorarioInvalido(
+                "O horário solicitado está fora do expediente da clínica."
+            )
 
         if not self.profissional_disponivel(atendimento, ignorar_id):
-            raise ValueError("Não há profissionais disponíveis para o horário solicitado.")
+            raise ErroConflitoAgendamento(
+                "Não há profissionais disponíveis para o horário solicitado."
+            )
 
     def profissional_disponivel(
         self,
